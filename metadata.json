@@ -1,0 +1,6 @@
+{
+  "name": "Sistema Operativo de Gestión de Anuncios",
+  "description": "Plataforma para recepción, validación con IA y gestión de anuncios publicitarios para TV, con integración a Google Drive y Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
