@@ -90,15 +90,17 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
   }, []);
 
   const handleEnded = () => {
-    if (playlist.length <= 1) {
-      const currentVid = videoRefs.current[0];
-      if (currentVid) {
-        currentVid.currentTime = 0;
-        currentVid.play().catch(() => {});
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    setCurrentIndex(nextIndex);
+    if (nextIndex === 0 && playlist.length > 0 && playlist[0].type === 'video') {
+      const firstVid = videoRefs.current[0];
+      if (firstVid) {
+        try {
+          firstVid.currentTime = 0;
+          firstVid.play().catch(() => {});
+        } catch (e) {}
       }
-      return;
     }
-    setCurrentIndex(prev => (prev + 1) % playlist.length);
   };
 
   // Timer for image items
@@ -119,8 +121,10 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
       if (!videoEl) return;
 
       if (idx === currentIndex && item.type === 'video') {
-        if (videoEl.readyState >= 1) {
+        try {
           videoEl.currentTime = 0;
+        } catch (e) {
+          console.warn("Could not reset currentTime", e);
         }
         const playPromise = videoEl.play();
         if (playPromise !== undefined) {
@@ -163,8 +167,7 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
       <div className={`relative flex items-center justify-center transition-transform duration-500 ease-in-out ${isRotated ? 'rotate-90 w-[100vh] h-[100vw]' : 'w-full h-full'}`}>
         {playlist.map((item, idx) => {
           const isActive = idx === currentIndex;
-          const isNext = idx === (currentIndex + 1) % playlist.length;
-          const videoSrc = (isActive || isNext) ? item.url : undefined;
+          const mediaSrc = item.url;
 
           return (
             <div
@@ -176,18 +179,13 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
               {item.type === 'video' ? (
                 <video
                   ref={el => { videoRefs.current[idx] = el; }}
-                  src={videoSrc}
+                  src={mediaSrc}
                   className="w-full h-full object-contain"
-                  preload={isActive ? "auto" : "metadata"}
+                  preload="auto"
                   autoPlay={isActive}
                   muted
                   playsInline
                   loop={playlist.length === 1}
-                  onCanPlay={(e) => {
-                    if (isActive) {
-                      e.currentTarget.play().catch(() => {});
-                    }
-                  }}
                   onEnded={() => {
                     if (isActive) handleEnded();
                   }}
@@ -200,7 +198,7 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
                 />
               ) : (
                 <img
-                  src={item.url}
+                  src={mediaSrc}
                   alt="TV Banner"
                   className="w-full h-full object-contain"
                   onError={() => {

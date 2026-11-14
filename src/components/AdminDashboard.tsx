@@ -179,8 +179,10 @@ export function AdminDashboard() {
         const vEl = videoRefs.current[refIdx];
         if (!vEl) return;
         if (idx === currentVideoIndex && isPlaying) {
-          if (vEl.readyState >= 1) {
+          try {
             vEl.currentTime = 0;
+          } catch (e) {
+            console.warn("Could not reset currentTime", e);
           }
           const playPromise = vEl.play();
           if (playPromise !== undefined) {
@@ -694,7 +696,7 @@ export function AdminDashboard() {
                           const isActive = idx === currentVideoIndex;
                           const isImg = isMediaImage(ad);
                           const isNext = idx === (currentVideoIndex + 1) % approvedAds.length;
-                          const videoSrc = (isActive || isNext) ? ad.videoUrl : undefined;
+                          const mediaSrc = (isActive || isNext) ? ad.videoUrl : undefined;
 
                           return (
                             <div
@@ -705,14 +707,14 @@ export function AdminDashboard() {
                             >
                               {isImg ? (
                                 <img 
-                                  src={ad.videoUrl} 
+                                  src={mediaSrc} 
                                   className="w-full h-full object-contain" 
                                   alt="Ad" 
                                 />
                               ) : (
                                 <video 
                                   ref={el => { videoRefs.current[idx] = el; }}
-                                  src={videoSrc}
+                                  src={mediaSrc}
                                   className="w-full h-full object-contain"
                                   preload={isActive ? "auto" : "metadata"}
                                   autoPlay={isActive && isPlaying}
@@ -1037,7 +1039,7 @@ export function AdminDashboard() {
                         const isActive = idx === currentVideoIndex;
                         const isImg = isMediaImage(ad);
                         const isNext = idx === (currentVideoIndex + 1) % approvedAds.length;
-                        const videoSrc = (isActive || isNext) ? ad.videoUrl : undefined;
+                        const mediaSrc = (isActive || isNext) ? ad.videoUrl : undefined;
 
                         return (
                           <div
@@ -1048,14 +1050,14 @@ export function AdminDashboard() {
                           >
                             {isImg ? (
                               <img 
-                                src={ad.videoUrl} 
+                                src={mediaSrc} 
                                 className="w-full h-full object-contain" 
                                 alt="Ad" 
                               />
                             ) : (
                               <video 
                                 ref={el => { videoRefs.current[idx + approvedAds.length] = el; }}
-                                src={videoSrc}
+                                src={mediaSrc}
                                 className="w-full h-full object-contain"
                                 preload={isActive ? "auto" : "metadata"}
                                 autoPlay={isActive && isPlaying}
