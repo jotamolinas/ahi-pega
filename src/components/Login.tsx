@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
+import { auth, db } from '../firebase';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,13 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'unauthorized') {
+      setError('Acceso denegado: Su cuenta no tiene privilegios de administrador autorizados.');
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +24,29 @@ export function Login() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userEmail = userCredential.user.email?.toLowerCase() || '';
+
+      const defaultAdmins = ['jotamolinas@gmail.com', 'everacost@gmail.com', 'test@ahipega.com.py'];
+      let firestoreAdmins: string[] = [];
+      try {
+        const querySnapshot = await getDocs(collection(db, 'admins'));
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.email) firestoreAdmins.push(data.email.toLowerCase());
+        });
+      } catch (e) {
+        // ignore
+      }
+
+      const allowed = [...defaultAdmins, ...firestoreAdmins];
+      if (!allowed.includes(userEmail)) {
+        await signOut(auth);
+        setError('Acceso denegado: Este correo no está autorizado como administrador.');
+        setLoading(false);
+        return;
+      }
+
       navigate('/admin');
     } catch (err: any) {
       setError('Credenciales incorrectas o acceso denegado.');

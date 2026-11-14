@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } fro
 import { db, auth, storage } from '../firebase';
 import { ref, deleteObject } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
-import { Check, X, Clock, ExternalLink, Video, MonitorPlay, Settings2, RefreshCcw, Zap, Play, Pause, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Camera, Images, Minimize2, AlertCircle, Trash2, LogOut, Download } from 'lucide-react';
+import { Check, X, Clock, ExternalLink, Video, MonitorPlay, Settings2, RefreshCcw, Zap, Play, Pause, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Camera, Images, Minimize2, AlertCircle, Trash2, LogOut, Download, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import QRCode from 'react-qr-code';
@@ -62,11 +62,12 @@ type TransitionType = 'blur' | 'flash' | 'slide' | 'flip';
 import { BannerManager } from './BannerManager';
 import { TVPlayer } from './TVPlayer';
 import { FastUploadModal } from './FastUploadModal';
+import { AdminManager } from './AdminManager';
 
 export function AdminDashboard() {
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'anuncios' | 'banners' | 'totem'>('anuncios');
+  const [activeTab, setActiveTab] = useState<'anuncios' | 'banners' | 'totem' | 'admins'>('anuncios');
   const [tvMode, setTvMode] = useState(false);
   const [showFastUpload, setShowFastUpload] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{id: string, mediaUrl?: string} | null>(null);
@@ -423,6 +424,12 @@ export function AdminDashboard() {
                   className={`px-3 py-1 rounded-lg text-xs font-mono uppercase tracking-widest transition-colors ${activeTab === 'banners' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
                 >
                   Banners
+                </button>
+                <button 
+                  onClick={() => setActiveTab('admins')}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono uppercase tracking-widest transition-colors ${activeTab === 'admins' ? 'bg-fuchsia-500/20 text-fuchsia-400 border border-fuchsia-500/50' : 'text-slate-500 hover:text-slate-300 border border-transparent'}`}
+                >
+                  Admins
                 </button>
                 <div className="w-px h-4 bg-white/10 mx-1"></div>
                 <button 
@@ -1007,6 +1014,12 @@ export function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === 'admins' && (
+            <div className="h-full w-full bg-slate-950 overflow-y-auto p-4">
+              <AdminManager />
+            </div>
+          )}
+
           {activeTab === 'totem' && (
             <div className="h-full w-full bg-black overflow-y-auto p-4 flex flex-col items-center justify-center relative">
               <div className="flex items-center justify-between w-full max-w-[280px] mb-4">
@@ -1142,6 +1155,19 @@ export function AdminDashboard() {
           >
             <Images className="w-5 h-5" />
             <span className="text-[10px] font-mono tracking-wider">Banners</span>
+          </button>
+
+          {/* Admins */}
+          <button
+            onClick={() => setActiveTab('admins')}
+            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all ${
+              activeTab === 'admins' 
+                ? 'text-fuchsia-400 font-bold bg-fuchsia-500/10 border border-fuchsia-500/30' 
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Shield className="w-5 h-5" />
+            <span className="text-[10px] font-mono tracking-wider">Admins</span>
           </button>
 
           {/* Cargar Button */}
