@@ -90,17 +90,7 @@ export function TVPlayer({ onClose }: TVPlayerProps) {
   }, []);
 
   const handleEnded = () => {
-    const nextIndex = (currentIndex + 1) % playlist.length;
-    setCurrentIndex(nextIndex);
-    if (nextIndex === 0 && playlist.length > 0 && playlist[0].type === 'video') {
-      const firstVid = videoRefs.current[0];
-      if (firstVid) {
-        try {
-          firstVid.currentTime = 0;
-          firstVid.play().catch(() => {});
-        } catch (e) {}
-      }
-    }
+    setCurrentIndex(prev => (prev + 1) % playlist.length);
   };
 
   // Timer for image items
